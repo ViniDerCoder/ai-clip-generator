@@ -6,13 +6,14 @@ import { generateText } from '../utils/ai.js';
 
 
 export async function getTopic(generate: boolean) {
+    coloredLog("title", "\n\nGenerating Topic");
     if (generate) {
         //Generate topic
         const topic = await generateTopic();
-        return topic;
+        return topic || undefined;
     } else {
         //Ask for topic
-        const topic = await askQuestion('Enter a topic: ');
+        const topic = await askQuestion('Enter a topic');
         return topic;
     }
 }
