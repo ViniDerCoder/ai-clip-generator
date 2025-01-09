@@ -1,0 +1,9 @@
+{
+    "automaticMode": false,
+    "defaults": {
+        "prompts": {
+            "topicGenerationPrompt": "standard.txt",
+            "infoTextGenerationPrompt": "standard.txt"
+        }
+    }
+}

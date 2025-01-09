@@ -1,0 +1,29 @@
+{
+  "name": "ai-clip-generator",
+  "version": "1.0.0",
+  "description": "A tool which lets users create simple video clip about a topic",
+  "main": "out/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "watcher": "tsc -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ViniDerCoder/ai-clip-generator.git"
+  },
+  "author": "Vincent Abeln",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ViniDerCoder/ai-clip-generator/issues"
+  },
+  "homepage": "https://github.com/ViniDerCoder/ai-clip-generator",
+  "devDependencies": {
+    "@types/node": "^22.10.5"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "groq-sdk": "^0.11.0",
+    "openai": "^4.77.4"
+  }
+}
