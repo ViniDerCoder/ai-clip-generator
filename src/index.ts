@@ -6,10 +6,13 @@ import { getTopic } from './steps/topicSelection.js';
 import { generateScriptForTopic } from './steps/scriptGenerator.js';
 import { downloadContent } from './steps/contentDownloader.js';
 import { generateAudioForScript } from './steps/textToSpeech.js';
+import { speechToText } from './steps/speechToText.js';
 
 //Initialize
 await import('./utils/ai.js');
 await import('./steps/textToSpeech.js')
+await import('./steps/speechToText.js')
+await import('./steps/contentDownloader.js')
 
 export const config = JSON.parse(fs.readFileSync('config/config.json', 'utf-8')) as Config;
 export const automaticMode = config.automaticMode;
@@ -52,6 +55,9 @@ async function generateClip() {
     //Text to Speech
     fs.mkdirSync('clips/' + folderName + '/audio');
     await generateAudioForScript(script, 'clips/' + folderName + '/audio');
+
+    //Speech to Text
+    await speechToText('clips/' + folderName + '/audio/final.mp3', 'clips/' + folderName + '/transcript.json');
 }
 
 for (let i = 0; i < amountOfClipsToGenerate; i++) {
