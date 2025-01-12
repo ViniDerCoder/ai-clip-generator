@@ -22,23 +22,31 @@ export const askQuestion = (question: string, defaultValue?: string): Promise<st
             rl.close();
             resolve(answer || defaultValue);
         });
+
+        if (defaultValue) {
+            rl.write(defaultValue);
+        }
     });
 };
 
-export const askYesNoQuestion = async (question: string, defaultValue?: boolean): Promise<boolean | undefined> => {
-    const answer = await askQuestion(`${questionColor}${question} ${valueSelectionColor}(${defaultValue === true ? defaultValueColor : ""}yes${valueSelectionColor}/${defaultValue === false ? defaultValueColor : ""}no${valueSelectionColor})${resetColor}`);
+export const askYesNoQuestion = async (question: string, defaultValue?: boolean, stripDefaultValues?: boolean): Promise<boolean | undefined> => {
+    const answer = await askQuestion(`${questionColor}${question} ${valueSelectionColor}${!stripDefaultValues ? `(${defaultValue === true ? defaultValueColor : ""}yes${valueSelectionColor}/${defaultValue === false ? defaultValueColor : ""}no${valueSelectionColor})` : ""}${resetColor}`);
     return answer ? answer.toLowerCase().startsWith('y') : defaultValue;
 }
 
 export const askMultipleChoiceQuestion = async (question: string, choices: string[], defaultValue?: string): Promise<string | undefined> => {
     console.log("")
-    const answer = await askQuestion(`${choices.map((choice, index) => `${defaultValue === choice ? defaultValueColor : ""}${index + 1}${valueSelectionColor}:    ${choice}`).join('\n')}${resetColor}\n${questionColor}${question}${resetColor}`);
+    const answer = await askQuestion(`${choices.map((choice, index) => `${defaultValue === choice ? defaultValueColor : valueSelectionColor}${index + 1}${valueSelectionColor}:    ${choice}`).join('\n')}${resetColor}\n${questionColor}${question}${resetColor}`);
     return answer ? choices[parseInt(answer) - 1] : defaultValue;
 }
 
 export const askNumberQuestion = async (question: string, defaultValue?: number): Promise<number | undefined> => {
     const answer = await askQuestion(`${questionColor}${question}${resetColor}${defaultValue ? ` ${valueSelectionColor}(${defaultValueColor}${defaultValue}${valueSelectionColor})${resetColor}` : ""}`);
     return answer ? (isNaN(parseInt(answer)) ? undefined : parseInt(answer)) : defaultValue;
+}
+
+export const askContinueQuestion = async (question: string): Promise<boolean> => {
+    return await askYesNoQuestion(question, true, true) || false;
 }
 
 export const coloredLog = (color: "error" | "normal" | "question" | "defaultValue" | "valueSelection" | "warn" | "debug" | "success" |"title", message: string) => {

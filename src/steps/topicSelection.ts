@@ -44,6 +44,20 @@ async function generateTopic() {
         return await generateTopic();
     }
 
-    const topic = generateText(promptContent);
+    const topic = await generateText(promptContent);
+    if(!topic) {
+        coloredLog("error", 'Failed to generate topic.');
+        return await generateTopic();
+    }
+
+    coloredLog("normal", `Generated topic: ${topic}`);
+
+    const confirm = await askMultipleChoiceQuestion(`Generated topic: ${topic}. Select an action`, ['Use Topic', 'Edit Topic', 'Regenerate Topic'], 'Use Topic');
+    if(confirm === 'Edit Topic') {
+        return await askQuestion('Edit topic', topic);
+    } else if(confirm === 'Regenerate Topic') {
+        return await generateTopic();
+    }
+
     return topic;
 }

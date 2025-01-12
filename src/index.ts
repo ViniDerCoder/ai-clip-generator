@@ -1,7 +1,7 @@
 import fs from 'fs';
 
 import { Config } from './utils/types.js';
-import { askNumberQuestion, askQuestion, askYesNoQuestion, coloredLog } from './utils/userInput.js';
+import { askNumberQuestion, askYesNoQuestion, coloredLog } from './utils/userInput.js';
 import { getTopic } from './steps/topicSelection.js';
 import { generateScriptForTopic } from './steps/scriptGenerator.js';
 import { downloadContent } from './steps/contentDownloader.js';
