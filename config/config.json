@@ -5,5 +5,9 @@
             "topicGenerationPrompt": "standard.txt",
             "infoTextGenerationPrompt": "standard.txt"
         }
+    },
+    "videoSettings": {
+        "width": 1080,
+        "height": 1920
     }
 }
