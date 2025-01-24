@@ -5,5 +5,19 @@ export type Config = {
             topicGenerationPrompt: string,
             infoTextGenerationPrompt: string
         }
+    },
+    videoSettings: {
+        width: number,
+        height: number
     }
 }
+
+export type SubtitleWord = {
+    start: number,
+    end: number,
+    word: string,
+    punctuated_word: string
+    confidence: number
+}
+
+export type Subtitle = Array<SubtitleWord>

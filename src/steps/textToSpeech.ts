@@ -51,21 +51,33 @@ async function stitchAudioChunks(audioChunks: string[], outputPath: string): Pro
 }
 
 function splitString(str: string, chunkSize: number): string[] {
-    const chunks: string[] = [];
+    const chunks: string[][] = [];
     const words = str.trim().split(' ');
-    words.forEach((word, index) => {
-        if (index === 0) {
-            chunks.push(word);
-            return;
+    let currentChunk = 0;
+
+    while(words.length > 0) {
+        if(!chunks[currentChunk]) chunks[currentChunk] = [];
+        
+        while(words.length > 0 && (chunks[currentChunk].join(' ').length + words[0].length) < chunkSize) {
+            chunks[currentChunk].push(words.shift() as string);
+            console.log("Adding " + chunks[currentChunk][chunks[currentChunk].length-1] + " to chunk " + currentChunk)
         }
-        const lastChunk = chunks[chunks.length - 1];
-        if (lastChunk.length + word.length + 1 <= chunkSize) {
-            chunks[chunks.length - 1] = `${lastChunk} ${word}`;
-        } else {
-            chunks.push(word);
+
+        while(
+            chunks[currentChunk].length > 0 &&
+            !chunks[currentChunk][chunks[currentChunk].length-1].endsWith('.') && 
+            !chunks[currentChunk][chunks[currentChunk].length-1].endsWith('?') && 
+            !chunks[currentChunk][chunks[currentChunk].length-1].endsWith('!') && 
+            !chunks[currentChunk][chunks[currentChunk].length-1].endsWith(',') &&
+            chunks[currentChunk].findIndex(word => word.endsWith('.') || word.endsWith('?') || word.endsWith('!') || word.endsWith(',')) !== -1
+        ) {
+            words.unshift(chunks[currentChunk].pop() ||"")
+            console.log("Removing " + words[0] + " from chunk " + currentChunk)
         }
-    });
-    return chunks;
+        currentChunk++;
+    }
+
+    return chunks.map(chunk => chunk.join(' '));
 }
 
 async function textToSpeech(text: string, outputPath: string) {

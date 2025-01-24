@@ -11,6 +11,7 @@ const titleColor = '\x1b[1m\x1b[35m';
 const resetColor = '\x1b[0m';
 
 
+
 export const askQuestion = (question: string, defaultValue?: string): Promise<string | undefined> => {
     const rl = readline.createInterface({
         input: process.stdin,
@@ -49,7 +50,30 @@ export const askContinueQuestion = async (question: string): Promise<boolean> =>
     return await askYesNoQuestion(question, true, true) || false;
 }
 
-export const coloredLog = (color: "error" | "normal" | "question" | "defaultValue" | "valueSelection" | "warn" | "debug" | "success" |"title", message: string) => {
+export const newProgressBar = (name: string) => {
+    console.log(`${titleColor}${name}${resetColor}: `);
+    updateProgressBar(name, 0, "Starting...");
+};
+
+let lastProgressBarProgress = 0;
+export const updateProgressBar = (name: string, progress?: number, info: string = "", error: boolean = false) => {
+    if (!progress) progress = lastProgressBarProgress;
+    lastProgressBarProgress = progress;
+
+    process.stdout.clearLine(0);
+    process.stdout.cursorTo(0);
+    process.stdout.write(`${questionColor}${name}: ${(error ? errorColor : resetColor) + drawProgressBar(progress)} ${debugColor}${info}${resetColor}`);
+};
+
+const drawProgressBar = (progress: number) => {
+    const barWidth = 30;
+    const filledWidth = Math.floor(progress / 100 * barWidth);
+    const emptyWidth = barWidth - filledWidth;
+    const progressBar = '█'.repeat(filledWidth) + '▒'.repeat(emptyWidth);
+    return `${progress === 100 ? successColor : resetColor}[${progressBar}] ${Math.round(progress * 10) / 10}%`;
+}
+
+export const coloredLog = (color: "error" | "normal" | "question" | "defaultValue" | "valueSelection" | "warn" | "debug" | "success" | "title", message: string) => {
     switch (color) {
         case "error":
             console.log(`${errorColor}${message}${resetColor}`);
