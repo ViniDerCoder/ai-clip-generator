@@ -3,7 +3,8 @@
     "defaults": {
         "prompts": {
             "topicGenerationPrompt": "standard.txt",
-            "infoTextGenerationPrompt": "standard.txt"
+            "infoTextGenerationPrompt": "standard.txt",
+            "searchQueryGenerationPrompt": "standard.txt"
         }
     },
     "videoSettings": {

@@ -3,7 +3,8 @@ export type Config = {
     defaults: {
         prompts: {
             topicGenerationPrompt: string,
-            infoTextGenerationPrompt: string
+            infoTextGenerationPrompt: string,
+            searchQueryGenerationPrompt: string
         }
     },
     videoSettings: {

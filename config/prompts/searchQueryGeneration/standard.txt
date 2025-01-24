@@ -1,0 +1,2 @@
+Generate a short search query for images and videos. The search query should be designed to search for images and videos that are interesting and entertaining.
+Generate the search query so that it can easily find images which match the given topic and script. Answer with just the best query you could think of in few words.

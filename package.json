@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/ViniDerCoder/ai-clip-generator",
   "devDependencies": {
+    "@types/imagemagick": "^0.0.35",
     "@types/node": "^22.10.5",
     "@types/string-pixel-width": "^1.10.3"
   },
@@ -29,6 +30,7 @@
     "ffcreator": "^7.5.8",
     "get-video-duration": "^4.1.0",
     "groq-sdk": "^0.11.0",
+    "sharp": "^0.33.5",
     "string-pixel-width": "^1.11.0"
   }
 }

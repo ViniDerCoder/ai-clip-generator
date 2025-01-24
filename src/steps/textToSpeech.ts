@@ -60,7 +60,6 @@ function splitString(str: string, chunkSize: number): string[] {
         
         while(words.length > 0 && (chunks[currentChunk].join(' ').length + words[0].length) < chunkSize) {
             chunks[currentChunk].push(words.shift() as string);
-            console.log("Adding " + chunks[currentChunk][chunks[currentChunk].length-1] + " to chunk " + currentChunk)
         }
 
         while(
@@ -72,7 +71,6 @@ function splitString(str: string, chunkSize: number): string[] {
             chunks[currentChunk].findIndex(word => word.endsWith('.') || word.endsWith('?') || word.endsWith('!') || word.endsWith(',')) !== -1
         ) {
             words.unshift(chunks[currentChunk].pop() ||"")
-            console.log("Removing " + words[0] + " from chunk " + currentChunk)
         }
         currentChunk++;
     }

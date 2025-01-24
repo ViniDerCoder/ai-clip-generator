@@ -1,7 +1,13 @@
 import fs from 'fs';
 import fetch from 'node-fetch';
+import sharp from 'sharp';
 
-import { askMultipleChoiceQuestion, coloredLog } from '../utils/userInput.js';
+import { askMultipleChoiceQuestion, askQuestion, coloredLog } from '../utils/userInput.js';
+import { promptFileSelection } from '../utils/promptFileSelection.js';
+import { generateText } from '../utils/ai.js';
+import { Config } from '../utils/types.js';
+
+const config = JSON.parse(fs.readFileSync('config/config.json', 'utf-8')) as Config;
 
 
 (await import('dotenv')).config();
@@ -12,15 +18,35 @@ if (!API_KEY) {
 }
 
 
-export async function downloadContent(topic: string, amount: number, folderPath: string) {
+export async function downloadContent(topic: string, scriptPath: string, amount: number, folderPath: string) {
     coloredLog("title", "\n\nDownloading Content");
 
     const type = await askMultipleChoiceQuestion('Select content type', ['Images', 'Videos', 'Both'], 'Videos');
 
+    const searchQueryType = await askMultipleChoiceQuestion('Select search query type', ['Generate', 'Use Topic', 'Custom'], 'Generate');
+
+    let searchQuery = topic
+
+    if (searchQueryType === 'Generate') {
+        const script = fs.readFileSync(scriptPath, 'utf-8');
+        const promptContent = await promptFileSelection('searchQueryGeneration', config.defaults.prompts.searchQueryGenerationPrompt, config.automaticMode);
+
+        const generatedSearchQuery = await generateText(promptContent, [{ name: 'topic', value: topic }, { name: 'script', value: script }]);
+        if (!generatedSearchQuery) {
+            coloredLog("error", 'Failed to generate script.');
+            return await downloadContent(topic, scriptPath, amount, folderPath);
+        } else searchQuery = generatedSearchQuery;
+
+    } else if (searchQueryType === 'Custom') {
+        searchQuery = await askQuestion('Enter search query') || topic;
+    }
+
+    coloredLog("normal", `Using search query: ${searchQuery}`);
+
     if (type === 'Videos' || type === 'Both') {
         coloredLog("question", "\nDownloading Videos");
 
-        const response = await fetch(`https://api.pexels.com/videos/search?query=${topic}&per_page=${amount}`, {
+        const response = await fetch(`https://api.pexels.com/videos/search?query=${searchQuery}&per_page=${amount}`, {
             headers: {
                 Authorization: API_KEY || ""
             }
@@ -50,7 +76,7 @@ export async function downloadContent(topic: string, amount: number, folderPath:
 
         coloredLog("success", `Downloaded ${amount} videos for topic ${topic}`);
     }
-    if(type === "Images" || type === "Both") {
+    if (type === "Images" || type === "Both") {
         coloredLog("question", "\nDownloading Images");
 
         const response = await fetch(`https://api.pexels.com/v1/search?query=${topic}&per_page=${amount}`, {
@@ -69,9 +95,26 @@ export async function downloadContent(topic: string, amount: number, folderPath:
             coloredLog("normal", `Downloading image ${i + 1} of ${amount}`);
             coloredLog("debug", `Image URL: ${photo.src.original}`);
 
-            fs.writeFileSync(`${folderPath}/${photo.id}.jpg`, await (await fetch(photo.src.original)).buffer());
+            fs.writeFileSync(`${folderPath}/${photo.id}-tmp.jpg`, await (await fetch(photo.src.original)).buffer());
+
+            coloredLog("normal", `Cropping image ${i + 1} of ${amount}`);
+            await cropImage(process.cwd() + `/${folderPath}/${photo.id}-tmp.jpg`);
         }
 
         coloredLog("success", `Downloaded ${amount} images for topic ${topic}`);
     }
+}
+
+async function cropImage(path: string) {
+    return new Promise((resolve, reject) => {
+        sharp(path)
+            .resize(config.videoSettings.width, config.videoSettings.height, {
+                fit: 'cover',
+                position: 'center'
+            })
+            .toFile(path.replace('-tmp.jpg', '.jpg'), (err) => {
+                if (err) reject(err);
+                else resolve(true);
+            });
+    })
 }

@@ -19,6 +19,7 @@ import { generateScriptForTopic } from './steps/scriptGenerator.js';
 import { downloadContent } from './steps/contentDownloader.js';
 import { generateAudioForScript } from './steps/textToSpeech.js';
 import { speechToText } from './steps/speechToText.js';
+import { createVideo } from './steps/combiner.js';
 
 //Ask for session specific settings
 const generateTopicsInAutomaticMode = await askYesNoQuestion('\nDo you want to generate topics automatically?', false) || false;
@@ -53,7 +54,7 @@ async function generateClip() {
 
     //Download content
     fs.mkdirSync('clips/' + folderName + '/content');
-    await downloadContent(topic, 5, "clips/" + folderName + "/content");
+    await downloadContent(topic, 'clips/' + folderName + '/script.txt', 5, "clips/" + folderName + "/content");
 
     //Text to Speech
     fs.mkdirSync('clips/' + folderName + '/audio');
@@ -61,6 +62,15 @@ async function generateClip() {
 
     //Speech to Text
     await speechToText('clips/' + folderName + '/audio/final.mp3', 'clips/' + folderName + '/transcript.json');
+
+    fs.mkdirSync('clips/' + folderName + '/out');
+    await createVideo(
+        'clips/' + folderName + '/out', 
+        fs.readdirSync('clips/' + folderName + '/content').map(content => 'clips/' + folderName + '/content/' + content), 
+        'clips/' + folderName + '/topic.txt', 
+        'clips/' + folderName + '/audio/final.mp3', 
+        'clips/' + folderName + '/transcript.json'
+    );
 }
 
 for (let i = 0; i < amountOfClipsToGenerate; i++) {
