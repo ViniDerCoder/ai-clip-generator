@@ -9,7 +9,8 @@ export type Config = {
     },
     videoSettings: {
         width: number,
-        height: number
+        height: number,
+        maxSingleClipDuration: number,
     }
 }
 
@@ -22,3 +23,6 @@ export type SubtitleWord = {
 }
 
 export type Subtitle = Array<SubtitleWord>
+
+export const contentSources = ["pexels", "pixabay"] as const;
+export type ContentSource = typeof contentSources[number];

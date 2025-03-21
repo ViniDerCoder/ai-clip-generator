@@ -9,6 +9,7 @@
     },
     "videoSettings": {
         "width": 1080,
-        "height": 1920
+        "height": 1920,
+        "maxSingleClipDuration": 20
     }
 }

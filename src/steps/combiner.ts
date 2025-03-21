@@ -4,14 +4,19 @@ import { getVideoDurationInSeconds } from 'get-video-duration';
 import getTextWidth from 'string-pixel-width';
 import fs from 'fs';
 
-import { coloredLog, newProgressBar, updateProgressBar } from '../utils/userInput.js';
+import { askContinueQuestion, askYesNoQuestion, coloredLog, newProgressBar, updateProgressBar } from '../utils/userInput.js';
 import { Config, Subtitle, SubtitleWord } from '../utils/types.js';
 
 const config = JSON.parse(fs.readFileSync('config/config.json', 'utf-8')) as Config;
-const { width, height } = config.videoSettings;
+const { width, height, maxSingleClipDuration } = config.videoSettings;
 
-export async function createVideo(outputPath: string, contentPaths: string[], titlePath: string, audioPath: string, transcriptPath: string) {
-    const promise = new Promise(async (resolve, reject) => {
+export async function createVideo(outputPath: string, contentPaths: string[], titlePath: string, audioPath: string, transcriptPath: string): Promise<undefined> {
+    const promise = new Promise<undefined>(async (resolve, reject) => {
+
+        coloredLog("normal", `\nBefore starting the video processing, check the content folder of this clip. Delete images/videos which aren't matching the topic and add new content if necessary. The images/videos are used in the video in their alphabetical order of their file name.\n`
+        );
+
+        if(!await askYesNoQuestion('Start video processing?', true)) return createVideo(outputPath, contentPaths, titlePath, audioPath, transcriptPath);
 
         coloredLog('title', '\nStarting video processing');
 
@@ -32,6 +37,7 @@ export async function createVideo(outputPath: string, contentPaths: string[], ti
         scene.setTransition("none", 0);
 
         const genScene = async (i: number) => {
+            coloredLog('debug', (i + 1) + '. content file: ' + contentPaths[i]);
             const duration = await addToScene(contentPaths[i], scene, usedLength, audioLength + 1)
             usedLength += duration
             if (i < contentPaths.length - 1) await genScene(i + 1)
@@ -139,6 +145,8 @@ async function addToScene(contentPath: string, scene: FFCreator.FFScene, usedLen
 
     if (contentPath.endsWith('.mp4')) {
         const video = new FFCreator.FFVideo({ path: contentPath, x: width / 2, y: height / 2, width, height });
+        
+        if (duration > maxSingleClipDuration) video.setDuration(maxSingleClipDuration);
         video.setAudio(false)
         video.addEffect("fadeIn", 0.5, usedLength);
 
@@ -147,6 +155,7 @@ async function addToScene(contentPath: string, scene: FFCreator.FFScene, usedLen
     }
     else {
         const image = new FFCreator.FFImage({ path: contentPath, x: width / 2, y: height / 2, width, height });
+
         image.setDuration(duration);
         image.addEffect("fadeIn", 0.5, usedLength);
         image.addEffect("zoomingIn", duration, usedLength);
