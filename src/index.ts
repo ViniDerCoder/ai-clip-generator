@@ -28,6 +28,8 @@ const amountOfClipsToGenerate = (generateTopicsInAutomaticMode && automaticMode)
 
 async function generateClip() {
 
+    if (!fs.existsSync('temp')) fs.mkdirSync('temp');
+
     //Generate topic
     const topic = await getTopic(generateTopicsInAutomaticMode);
     if(!topic) {
@@ -71,6 +73,12 @@ async function generateClip() {
         'clips/' + folderName + '/audio/final.mp3', 
         'clips/' + folderName + '/transcript.json'
     );
+
+    try {
+        fs.rmSync('temp', { recursive: true });
+    } catch (error) {
+        coloredLog("warn", "Cleanup of temp folder wasn' successful.");
+    }
 }
 
 for (let i = 0; i < amountOfClipsToGenerate; i++) {

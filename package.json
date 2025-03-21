@@ -26,6 +26,7 @@
   "dependencies": {
     "@deepgram/sdk": "^3.9.0",
     "@rocka/mp3-duration": "^2.0.0",
+    "canvas": "^2.11.2",
     "dotenv": "^16.4.7",
     "ffcreator": "^7.5.8",
     "get-video-duration": "^4.1.0",

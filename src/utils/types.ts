@@ -11,6 +11,29 @@ export type Config = {
         width: number,
         height: number,
         maxSingleClipDuration: number,
+        captions: {
+            font: 
+                | "andale mono"
+                | "arial"
+                | "avenir"
+                | "avenir next"
+                | "comic sans ms"
+                | "courier new"
+                | "georgia"
+                | "helvetica"
+                | "impact"
+                | "open sans"
+                | "quantify"
+                | "tahoma"
+                | "times new roman"
+                | "trebuchet ms"
+                | "verdana"
+                | "webdings",
+            fontSize: number,
+            bold: boolean,
+            fontColor: string,
+            backgroundColor: string
+        }
     }
 }
 

@@ -6,14 +6,15 @@ import fs from 'fs';
 
 import { askContinueQuestion, askYesNoQuestion, coloredLog, newProgressBar, updateProgressBar } from '../utils/userInput.js';
 import { Config, Subtitle, SubtitleWord } from '../utils/types.js';
+import { generateCaptionsTextBox } from '../utils/styling.js';
 
 const config = JSON.parse(fs.readFileSync('config/config.json', 'utf-8')) as Config;
-const { width, height, maxSingleClipDuration } = config.videoSettings;
+const { width, height, maxSingleClipDuration, captions  } = config.videoSettings;
 
 export async function createVideo(outputPath: string, contentPaths: string[], titlePath: string, audioPath: string, transcriptPath: string): Promise<undefined> {
     const promise = new Promise<undefined>(async (resolve, reject) => {
 
-        coloredLog("normal", `\nBefore starting the video processing, check the content folder of this clip. Delete images/videos which aren't matching the topic and add new content if necessary. The images/videos are used in the video in their alphabetical order of their file name.\n`
+        coloredLog("warn", `\nBefore starting the video processing, check the content folder of this clip. \nDelete images/videos which aren't matching the topic and add new content if necessary. \nThe images/videos are used in the video in their alphabetical order of their file name.\n`
         );
 
         if(!await askYesNoQuestion('Start video processing?', true)) return createVideo(outputPath, contentPaths, titlePath, audioPath, transcriptPath);
@@ -36,6 +37,11 @@ export async function createVideo(outputPath: string, contentPaths: string[], ti
         scene.setDuration(audioLength + 1);
         scene.setTransition("none", 0);
 
+        if(!contentPaths[0]) {
+            coloredLog("error", "No content found. Please download content first.");
+            return createVideo(outputPath, contentPaths, titlePath, audioPath, transcriptPath);
+        }
+
         const genScene = async (i: number) => {
             coloredLog('debug', (i + 1) + '. content file: ' + contentPaths[i]);
             const duration = await addToScene(contentPaths[i], scene, usedLength, audioLength + 1)
@@ -47,61 +53,16 @@ export async function createVideo(outputPath: string, contentPaths: string[], ti
         const subtitles = JSON.parse(fs.readFileSync(transcriptPath, 'utf-8')) as Subtitle;
         const fontSize = 70
 
-        subtitles.forEach((subtitle: SubtitleWord) => {
-            const text = new FFCreator.FFText({
-                text: subtitle.punctuated_word,
-                fontSize: fontSize,
-                color: 'rgb(0, 0, 0)'
-            });
+        subtitles.forEach((subtitle: SubtitleWord, i: number) => {
+            const imageBuffer = generateCaptionsTextBox(subtitle.punctuated_word, captions);
+            fs.writeFileSync('./temp/textbox-' + i + '.png', imageBuffer);
+            const image = new FFCreator.FFImage({ path: './temp/textbox-' + i + '.png', x: width / 2, y: height - 450});
 
-            text.alignCenter();
+            image.setDuration(subtitle.end - subtitle.start);
+            image.addEffect("fadeIn", 0.01, subtitle.start);
+            image.addEffect("fadeOut", 0.01, subtitle.end - 0.01);
 
-            const textWidth = getTextWidth(subtitle.punctuated_word, {
-                size: fontSize,
-                font: 'arial',
-                bold: true
-            });
-
-            text.setXY(width / 2, height - 450);
-            text.setWH(textWidth, 100);
-
-            text.setStyle({
-                fontFamily: "Arial",
-                fontWeight: 'bold',
-                align: 'center',
-                backgroundColor: 'rgb(255, 255, 255)',
-                padding: 10
-            })
-
-            const leftEdge = new FFCreator.FFImage({
-                path: './assets/white-rounded-rectangle-500x100-left-edge-30.png',
-                x: width / 2 - textWidth / 2 - (30 / 2) - (10 / 2),
-                y: height - 450,
-                width: 30,
-                height: 100
-            });
-
-            const rightEdge = new FFCreator.FFImage({
-                path: './assets/white-rounded-rectangle-500x100-right-edge-30.png',
-                x: width / 2 + textWidth / 2 + (30 / 2) + (10 / 2),
-                y: height - 450,
-                width: 30,
-                height: 100
-            });
-
-            text.setDuration(subtitle.end - subtitle.start);
-            text.addEffect("fadeIn", 0.01, subtitle.start);
-            text.addEffect("fadeOut", 0.01, subtitle.end - 0.01);
-            leftEdge.setDuration(subtitle.end - subtitle.start);
-            leftEdge.addEffect("fadeIn", 0.01, subtitle.start);
-            leftEdge.addEffect("fadeOut", 0.01, subtitle.end - 0.01);
-            rightEdge.setDuration(subtitle.end - subtitle.start);
-            rightEdge.addEffect("fadeIn", 0.01, subtitle.start);
-            rightEdge.addEffect("fadeOut", 0.01, subtitle.end - 0.01);
-
-            scene.addChild(rightEdge);
-            scene.addChild(leftEdge);
-            scene.addChild(text);
+            scene.addChild(image);
         })
 
         creator.addChild(scene);
@@ -129,6 +90,7 @@ export async function createVideo(outputPath: string, contentPaths: string[], ti
 
         creator.on('error', (err) => {
             updateProgressBar('Generating video', undefined, 'Error [' + (Date.now() - startTimeStamp) + 'ms]', true);
+            coloredLog('error', 'Error while generating video: ' + err);
             resolve(undefined);
         });
     })

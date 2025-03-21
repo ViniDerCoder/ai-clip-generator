@@ -133,8 +133,8 @@ async function getVideos(source: ContentSource, searchQuery: string, amount: num
 
         let videoUrls = [] as Array<{ url: string, id: string }>;
         for (let i = 0; i < data.videos.length; i++) {
-            const videoUrls = data.videos[i].video_files
-            const bestVideo = videoUrls
+            const videos = data.videos[i].video_files
+            const bestVideo = videos
                 .filter((video: any) => video.link.includes(".com/video-files") && video.file_type === "video/mp4" && video.size < 50000000)
                 .sort((a: any, b: any) => b.width * b.height - a.width * a.height)[0];
 
@@ -143,7 +143,7 @@ async function getVideos(source: ContentSource, searchQuery: string, amount: num
                 continue;
             }
 
-            videoUrls.push({ ulr: bestVideo.link, id: "" + data.videos[i].id });
+            videoUrls.push({ url: bestVideo.link, id: "" + data.videos[i].id });
         }
         return videoUrls;
     }
@@ -162,7 +162,7 @@ async function getVideos(source: ContentSource, searchQuery: string, amount: num
         for (let i = 0; i < data.hits.length; i++) {
             const video = data.hits[i];
             if (video.videos.large.size === 0) {
-                videoUrls.push(video.videos.medium.url);
+                videoUrls.push({ url: video.videos.medium.url, id: "" + video.id });
             } else videoUrls.push({ url: video.videos.large.url, id: "" + video.id });
         }
         return videoUrls;

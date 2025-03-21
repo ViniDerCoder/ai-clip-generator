@@ -10,6 +10,13 @@
     "videoSettings": {
         "width": 1080,
         "height": 1920,
-        "maxSingleClipDuration": 20
+        "maxSingleClipDuration": 20,
+        "captions": {
+            "font": "Arial",
+            "fontSize": 70,
+            "bold": true,
+            "fontColor": "black",
+            "backgroundColor": "white"
+        }
     }
 }
