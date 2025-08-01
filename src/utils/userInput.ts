@@ -11,7 +11,6 @@ const titleColor = '\x1b[1m\x1b[35m';
 const resetColor = '\x1b[0m';
 
 
-
 export const askQuestion = (question: string, defaultValue?: string): Promise<string | undefined> => {
     const rl = readline.createInterface({
         input: process.stdin,

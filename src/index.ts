@@ -5,7 +5,9 @@ export const getConfig = () => config as Config;
 export const automaticMode = config.automaticMode;
 export const videoSettings = config.videoSettings;
 
-//Initialize
+export const inputDir = process.argv.find(arg => arg.startsWith('--dir='))?.split('=')[1];
+
+// Initialize
 await import('./utils/ai.js');
 await import('./steps/textToSpeech.js')
 await import('./steps/speechToText.js')
@@ -21,14 +23,14 @@ import { generateAudioForScript } from './steps/textToSpeech.js';
 import { speechToText } from './steps/speechToText.js';
 import { createVideo } from './steps/combiner.js';
 
+if (inputDir) await generateVideoFromPath(inputDir);
+
 //Ask for session specific settings
-const generateTopicsInAutomaticMode = await askYesNoQuestion('\nDo you want to generate topics automatically?', false) || false;
-const amountOfClipsToGenerate = (generateTopicsInAutomaticMode && automaticMode) ? ((await askNumberQuestion('How many clips do you want to generate?', 1)) || 1) : 1;
+const generateTopicsInAutomaticMode = inputDir ? false : (await askYesNoQuestion('\nDo you want to generate topics automatically?', false) || false);
+const amountOfClipsToGenerate = inputDir ? 0 : ((generateTopicsInAutomaticMode && automaticMode) ? ((await askNumberQuestion('How many clips do you want to generate?', 1)) || 1) : 1)
 
 
 async function generateClip() {
-
-    if (!fs.existsSync('temp')) fs.mkdirSync('temp');
 
     //Generate topic
     const topic = await getTopic(generateTopicsInAutomaticMode);
@@ -65,19 +67,30 @@ async function generateClip() {
     //Speech to Text
     await speechToText('clips/' + folderName + '/audio/final.mp3', 'clips/' + folderName + '/transcript.json');
 
-    fs.mkdirSync('clips/' + folderName + '/out');
+    await generateVideoFromPath('clips/' + folderName);
+}
+
+async function generateVideoFromPath(path: string) {
+    if (!fs.existsSync(path)) {
+        coloredLog("error", `Path ${path} does not exist.`);
+        return;
+    }
+
+    if (!fs.existsSync(path + '/out')) fs.mkdirSync(path + '/out');
+    if (!fs.existsSync('temp')) fs.mkdirSync('temp');
+
     await createVideo(
-        'clips/' + folderName + '/out', 
-        fs.readdirSync('clips/' + folderName + '/content').map(content => 'clips/' + folderName + '/content/' + content), 
-        'clips/' + folderName + '/topic.txt', 
-        'clips/' + folderName + '/audio/final.mp3', 
-        'clips/' + folderName + '/transcript.json'
+        path + '/out',
+        fs.readdirSync(path + '/content').map(content => path + '/content/' + content),
+        path + '/topic.txt',
+        path + '/audio/final.mp3',
+        path + '/transcript.json'
     );
 
     try {
         fs.rmSync('temp', { recursive: true });
     } catch (error) {
-        coloredLog("warn", "Cleanup of temp folder wasn' successful.");
+        coloredLog("warn", "Cleanup of temp folder wasn't successful.");
     }
 }
 

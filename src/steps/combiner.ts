@@ -45,7 +45,7 @@ export async function createVideo(outputPath: string, contentPaths: string[], ti
         const genScene = async (i: number) => {
             coloredLog('debug', (i + 1) + '. content file: ' + contentPaths[i]);
             const duration = await addToScene(contentPaths[i], scene, usedLength, audioLength + 1)
-            usedLength += duration
+            usedLength += duration < maxSingleClipDuration ? duration : maxSingleClipDuration;
             if (i < contentPaths.length - 1) await genScene(i + 1)
         }
         await genScene(0)
@@ -90,7 +90,8 @@ export async function createVideo(outputPath: string, contentPaths: string[], ti
 
         creator.on('error', (err) => {
             updateProgressBar('Generating video', undefined, 'Error [' + (Date.now() - startTimeStamp) + 'ms]', true);
-            coloredLog('error', 'Error while generating video: ' + err);
+            coloredLog('error', 'Error while generating video: ' + err.error);
+            console.log(err);
             resolve(undefined);
         });
     })
@@ -112,10 +113,9 @@ async function addToScene(contentPath: string, scene: FFCreator.FFScene, usedLen
         video.setAudio(false)
         video.addEffect("fadeIn", 0.5, usedLength);
 
-        console.log("Adding video ", contentPath, " to scene, duration: ", duration, " usedLength: ", usedLength)
+        console.log("Adding video ", contentPath, " to scene, duration: ", duration < maxSingleClipDuration ? duration : maxSingleClipDuration, " usedLength: ", usedLength)
         scene.addChild(video);
-    }
-    else {
+    } else {
         const image = new FFCreator.FFImage({ path: contentPath, x: width / 2, y: height / 2, width, height });
 
         image.setDuration(duration);

@@ -5,7 +5,7 @@ import sharp from 'sharp';
 import { askContinueQuestion, askMultipleChoiceQuestion, askQuestion, coloredLog } from '../utils/userInput.js';
 import { promptFileSelection } from '../utils/promptFileSelection.js';
 import { generateText } from '../utils/ai.js';
-import { Config, ContentSource, contentSources } from '../utils/types.js';
+import { Config, ContentSource, validContentSources } from '../utils/types.js';
 
 const config = JSON.parse(fs.readFileSync('config/config.json', 'utf-8')) as Config;
 
@@ -50,7 +50,7 @@ export async function downloadContent(topic: string, scriptPath: string, amount:
     coloredLog("normal", `Using search query: ${searchQuery}`);
 
 
-    const searchSource = await askMultipleChoiceQuestion('Select search source', [...contentSources], 'pexels');
+    const searchSource = await askMultipleChoiceQuestion('Select search source', [...validContentSources], 'pexels');
     const source = searchSource as ContentSource;
 
     if (type === 'Videos' || type === 'Both') {
@@ -65,7 +65,7 @@ export async function downloadContent(topic: string, scriptPath: string, amount:
             coloredLog("normal", `Downloading video ${i + 1} of ${amount}`);
             coloredLog("debug", `Video URL: ${videos[i].url}`);
 
-            fs.writeFileSync(`${folderPath}/${videos[i].id}.mp4`, await (await fetch(videos[i].url)).buffer());
+            fs.writeFileSync(`${folderPath}/${i*2}_${videos[i].id}.mp4`, await (await fetch(videos[i].url)).buffer());
         }
 
 
@@ -85,7 +85,7 @@ export async function downloadContent(topic: string, scriptPath: string, amount:
             const buffer = await (await fetch(images[i].url)).buffer()
 
             coloredLog("normal", `Cropping image ${i + 1} of ${amount}`);
-            await cropImage(buffer, process.cwd() + `/${folderPath}/${images[i].id}.jpg`);
+            await cropImage(buffer, process.cwd() + `/${folderPath}/${i*2+1}_${images[i].id}.jpg`);
         }
 
         coloredLog("success", `Downloaded ${amount} images for topic ${topic}`);

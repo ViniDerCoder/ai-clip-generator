@@ -12,30 +12,34 @@ export type Config = {
         height: number,
         maxSingleClipDuration: number,
         captions: {
-            font: 
-                | "andale mono"
-                | "arial"
-                | "avenir"
-                | "avenir next"
-                | "comic sans ms"
-                | "courier new"
-                | "georgia"
-                | "helvetica"
-                | "impact"
-                | "open sans"
-                | "quantify"
-                | "tahoma"
-                | "times new roman"
-                | "trebuchet ms"
-                | "verdana"
-                | "webdings",
+            font: CaptionFont,
             fontSize: number,
             bold: boolean,
-            fontColor: string,
+            fontColor: string
             backgroundColor: string
         }
     }
 }
+
+export const validCaptionFonts = [
+    "andale mono",
+    "arial",
+    "avenir",
+    "avenir next",
+    "comic sans ms",
+    "courier new",
+    "georgia",
+    "helvetica",
+    "impact",
+    "open sans",
+    "quantify",
+    "tahoma",
+    "times new roman",
+    "trebuchet ms",
+    "verdana",
+    "webdings"
+] as const;
+export type CaptionFont = typeof validCaptionFonts[number];
 
 export type SubtitleWord = {
     start: number,
@@ -47,5 +51,5 @@ export type SubtitleWord = {
 
 export type Subtitle = Array<SubtitleWord>
 
-export const contentSources = ["pexels", "pixabay"] as const;
-export type ContentSource = typeof contentSources[number];
+export const validContentSources = ["pexels", "pixabay"] as const;
+export type ContentSource = typeof validContentSources[number];

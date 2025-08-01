@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "watcher": "tsc -w"
+    "watcher": "tsc -w",
+    "run": "node --max-old-space-size=8192 --stack-size=16384 ."
   },
   "repository": {
     "type": "git",
